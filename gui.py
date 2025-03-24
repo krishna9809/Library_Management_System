@@ -419,27 +419,27 @@ class UserDashboard:
         button_issue = tk.Button(issue_book_window, text="Issue", command=lambda: self.save_issue_book(entry_book_id.get(), issue_book_window))
         button_issue.pack(pady=10)
 
-def save_issue_book(self, book_id, window):
-    conn = create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute('SELECT available FROM Books WHERE id = ?', (book_id,))
-            book = cursor.fetchone()
+    # Save Issue Book
+    def save_issue_book(self, book_id, window):
+        conn = create_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('SELECT available FROM Books WHERE id = ?', (book_id,))
+                book = cursor.fetchone()
 
-            if book and book[0] == 1:
-                # Use double quotes for the outer string and single quotes for the SQL query
-                cursor.execute("INSERT INTO Transactions (user_id, book_id, issue_date) VALUES (?, ?, date('now'))", (self.user_id, book_id))
-                cursor.execute('UPDATE Books SET available = 0 WHERE id = ?', (book_id,))
-                conn.commit()
-                messagebox.showinfo("Success", "Book issued successfully!")
-                window.destroy()  # Close the issue book window
-            else:
-                messagebox.showerror("Error", "Book is not available.")
-        except sqlite3.Error as e:
-            messagebox.showerror("Error", f"Error issuing book: {e}")
-        finally:
-            conn.close()
+                if book and book[0] == 1:
+                    cursor.execute("INSERT INTO Transactions (user_id, book_id, issue_date) VALUES (?, ?, date('now'))", (self.user_id, book_id))
+                    cursor.execute('UPDATE Books SET available = 0 WHERE id = ?', (book_id,))
+                    conn.commit()
+                    messagebox.showinfo("Success", "Book issued successfully!")
+                    window.destroy()  # Close the issue book window
+                else:
+                    messagebox.showerror("Error", "Book is not available.")
+            except sqlite3.Error as e:
+                messagebox.showerror("Error", f"Error issuing book: {e}")
+            finally:
+                conn.close()
 
     # Return a Book
     def return_book(self):
@@ -457,27 +457,27 @@ def save_issue_book(self, book_id, window):
         button_return = tk.Button(return_book_window, text="Return", command=lambda: self.save_return_book(entry_book_id.get(), return_book_window))
         button_return.pack(pady=10)
 
-def save_return_book(self, book_id, window):
-    conn = create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute('SELECT id FROM Transactions WHERE user_id = ? AND book_id = ? AND return_date IS NULL', (self.user_id, book_id))
-            transaction = cursor.fetchone()
+    # Save Return Book
+    def save_return_book(self, book_id, window):
+        conn = create_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute('SELECT id FROM Transactions WHERE user_id = ? AND book_id = ? AND return_date IS NULL', (self.user_id, book_id))
+                transaction = cursor.fetchone()
 
-            if transaction:
-                # Use double quotes for the outer string and single quotes for the SQL query
-                cursor.execute("UPDATE Transactions SET return_date = date('now') WHERE id = ?", (transaction[0],))
-                cursor.execute('UPDATE Books SET available = 1 WHERE id = ?', (book_id,))
-                conn.commit()
-                messagebox.showinfo("Success", "Book returned successfully!")
-                window.destroy()  # Close the return book window
-            else:
-                messagebox.showerror("Error", "No active issue found for this book.")
-        except sqlite3.Error as e:
-            messagebox.showerror("Error", f"Error returning book: {e}")
-        finally:
-            conn.close()
+                if transaction:
+                    cursor.execute("UPDATE Transactions SET return_date = date('now') WHERE id = ?", (transaction[0],))
+                    cursor.execute('UPDATE Books SET available = 1 WHERE id = ?', (book_id,))
+                    conn.commit()
+                    messagebox.showinfo("Success", "Book returned successfully!")
+                    window.destroy()  # Close the return book window
+                else:
+                    messagebox.showerror("Error", "No active issue found for this book.")
+            except sqlite3.Error as e:
+                messagebox.showerror("Error", f"Error returning book: {e}")
+            finally:
+                conn.close()
 
     # View My Transactions
     def view_my_transactions(self):
